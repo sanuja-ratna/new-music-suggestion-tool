@@ -1,0 +1,44 @@
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+
+# Spotify API credentials
+CLIENT_ID = 'c67a96c014dc471c874a1ee3b821ac55'
+CLIENT_SECRET = 'd554580c11264cd7be84ea90f5fa0b64'
+REDIRECT_URI = 'http://localhost:8888/callback'
+
+# Initialize the Spotify API client
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,
+                                               client_secret=CLIENT_SECRET,
+                                               redirect_uri=REDIRECT_URI,
+                                               scope='user-library-read'))
+
+def get_music_recommendations(artist_name):
+    try:
+        # Search for tracks by the given artist
+        results = sp.search(q=f'artist:{artist_name}', type='track', limit=10)
+
+        if 'tracks' in results:
+            tracks = results['tracks']['items']
+
+            if not tracks:
+                return "No tracks found for that artist."
+
+            # Extract track names and artists
+            recommendations = [f"{track['name']} by {', '.join([a['name'] for a in track['artists']])}" for track in tracks]
+            return recommendations
+        else:
+            return "No tracks found."
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
+if __name__ == '__main__':
+    artist_name = input("Enter an artist's name: ")
+    recommendations = get_music_recommendations(artist_name)
+
+    if recommendations:
+        print("\nRecommended tracks:")
+        for i, track in enumerate(recommendations, start=1):
+            print(f"{i}. {track}")
+    else:
+        print("No recommendations found.")
